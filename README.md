@@ -4,7 +4,7 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/nethelp.svg)](https://pypi.org/project/nethelp)
 
 -----
-`NetFuncs2` is a Python package for network analysis and color utilities. The package includes various graph-related functions, such as computing degree distributions, running graph algorithms, and performing shortest path calculations. It also provides utilities for handling colorblindness and color conversions.
+`nethelp` is a Python package for network analysis and color utilities. The package includes various graph-related functions, such as computing degree distributions, running graph algorithms, and performing shortest path calculations. It also provides utilities for handling colorblindness and color conversions.
 
 
 
