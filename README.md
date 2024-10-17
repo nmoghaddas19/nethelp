@@ -92,6 +92,7 @@ Simulates how a given color appears to different types of colorblindness. Suppor
 After installing, import the package and use the functions as needed:
 ```python
 import nethelp as nh
+import networkx as nx
 
 # Example: Calculate degree distribution
 G = nx.erdos_renyi_graph(100, 0.05)
