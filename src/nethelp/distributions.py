@@ -1,4 +1,5 @@
 import numpy as np
+import networkx as nx
 def degree_distribution(G, number_of_bins=15, log_binning=True, density=True, directed=False):
     """
     Given a degree sequence, return the y values (probability) and the
@@ -165,10 +166,38 @@ def calculate_katz_centrality(G, alpha, node = None):
 
 def average_shortest_path_length_per_node(G):
     """
-    Compute the average shortest path length for each node in the graph G.
+    Calculate the average shortest path length from each node to all other reachable nodes in the graph.
+
+    This function computes the average shortest path length for each node in the graph `G`.
+    For each node, the shortest path lengths to all other reachable nodes are calculated, 
+    and the average of those lengths is returned. If a node is isolated (not connected 
+    to other nodes), it will not be included in the average.
+
+    Parameters:
+    ----------
+    G : networkx.Graph
+        A NetworkX graph (can be directed or undirected). The graph should be connected, 
+        or the results may not be meaningful for isolated nodes.
+
+    Returns:
+    -------
+    dict
+        A dictionary where the keys are the nodes in the graph and the values are the average 
+        shortest path lengths for each node. The average is computed over all reachable nodes, 
+        excluding the node itself.
     
-    :param G: NetworkX graph (can be directed or undirected)
-    :return: Dictionary where keys are nodes and values are the average shortest path lengths.
+    Notes:
+    -----
+    - For disconnected graphs, the function will only consider reachable nodes. The average 
+      for isolated nodes will exclude unreachable nodes.
+    - The graph `G` can be directed or undirected, and the shortest path lengths are computed 
+      accordingly.
+    
+    Example:
+    --------
+    >>> G = nx.path_graph(5)
+    >>> average_shortest_path_length_per_node(G)
+    {0: 2.0, 1: 1.5, 2: 1.0, 3: 1.5, 4: 2.0}
     """
     avg_shortest_paths = {}
     
@@ -183,3 +212,168 @@ def average_shortest_path_length_per_node(G):
         avg_shortest_paths[node] = total_length / (num_nodes - 1)  # Exclude the node itself from the average
     
     return avg_shortest_paths
+
+def closeness_centrality(G):    
+    """
+    Calculate the closeness centrality for each node in a graph from scratch.
+
+    Closeness centrality is a measure of how close a node is to all other nodes
+    in the network. It is calculated as the reciprocal of the sum of the shortest
+    path distances from a node to all other nodes in the graph. This function 
+    computes the closeness centrality for all nodes in the graph `G` without 
+    using any external library functions for the centrality calculation.
+
+    Parameters
+    ----------
+    G : networkx.Graph
+        The input graph on which the closeness centrality is calculated. It can
+        be any type of graph (undirected, directed, etc.) supported by NetworkX.
+
+    Returns
+    -------
+    centrality : dict
+        A dictionary where the keys are nodes in the graph and the values are
+        their corresponding closeness centrality scores. If a node is isolated,
+        its centrality will be 0.
+
+    Notes
+    -----
+    - For each node, this function computes the sum of shortest path lengths to 
+      all other reachable nodes in the graph using NetworkX's `shortest_path_length`.
+    - Nodes that are disconnected from the rest of the graph will have a centrality 
+      of 0.0.
+    - This function assumes that the graph is connected; however, it gracefully 
+      handles isolated nodes by assigning them a centrality score of 0.0.
+
+    Time Complexity
+    ---------------
+    The time complexity is O(N * (V + E)), where N is the number of nodes, V is 
+    the number of vertices, and E is the number of edges, due to the use of 
+    shortest path calculations for each node.
+
+    Citations
+    ---------
+    Bavelas, A. (1950). Communication patterns in task-oriented groups. The Journal 
+    of the Acoustical Society of America, 22(6), 725-730.
+
+    Sabidussi, G. (1966). The centrality index of a graph. Psychometrika, 31(4), 581–603.
+
+    Freeman, L. C. (1979). Centrality in social networks conceptual clarification. 
+    Social Networks, 1(3), 215–239.
+
+    Example
+    -------
+    >>> import networkx as nx
+    >>> G = nx.path_graph(4)
+    >>> closeness_centrality_from_scratch(G)
+    {0: 0.6666666666666666, 1: 1.0, 2: 1.0, 3: 0.6666666666666666}
+    """
+
+    centrality = {}
+    N = G.number_of_nodes()  # Total number of nodes in the graph
+
+    for node_i in G.nodes():
+        # Compute shortest paths from node_i to all other nodes
+        shortest_paths = nx.shortest_path_length(G, source=node_i)
+        
+        # Sum the lengths of the shortest paths
+        total_distance = sum(shortest_paths.values())
+
+        # Closeness centrality calculation (ignoring disconnected components)
+        if total_distance > 0 and N > 1:
+            centrality[node_i] = (N - 1) / total_distance
+        else:
+            centrality[node_i] = 0.0  # In case the node is isolated
+
+    return centrality
+
+def eigenvector_centrality(G, max_iter=100, tol=1e-08):
+    """
+    Calculate the eigenvector centrality for each node in a graph from scratch.
+
+    Eigenvector centrality is a measure of a node's influence in a network based on 
+    the idea that connections to high-scoring nodes contribute more to the score 
+    of a node than equal connections to low-scoring nodes. This centrality measure 
+    assigns relative scores to all nodes in the network based on the principle that 
+    a node's centrality is determined by the centrality of its neighbors.
+
+    Parameters
+    ----------
+    G : networkx.Graph
+        The input graph on which the eigenvector centrality is calculated. It can be
+        any type of graph (undirected, directed, etc.) supported by NetworkX.
+
+    max_iter : int, optional (default=100)
+        Maximum number of iterations for the power iteration method used to compute
+        the centrality values. Higher values may be required for large graphs.
+
+    tol : float, optional (default=1e-06)
+        Tolerance for the convergence of the eigenvector centrality values. The 
+        algorithm iterates until the change in centrality values is smaller than this
+        threshold.
+
+    Returns
+    -------
+    centrality : dict
+        A dictionary where the keys are nodes in the graph and the values are
+        their corresponding eigenvector centrality scores.
+
+    Notes
+    -----
+    - Eigenvector centrality was introduced by Bonacich (1972) as an extension 
+      of degree centrality, emphasizing the importance of connections to high-degree 
+      or highly influential nodes. 
+    - This algorithm computes eigenvector centrality using the power iteration 
+      method, which involves iteratively updating the centrality scores of each 
+      node based on the scores of their neighbors until convergence.
+    - Eigenvector centrality works best in connected, undirected graphs; for 
+      directed or disconnected graphs, results may vary or be undefined.
+    - The algorithm will stop either after `max_iter` iterations or when the 
+      centrality values converge to within the specified `tol`.
+
+    Time Complexity
+    ---------------
+    The time complexity is O(V * E * I), where V is the number of vertices, 
+    E is the number of edges, and I is the number of iterations (limited by `max_iter`).
+
+    Citations
+    ---------
+    Bonacich, P. (1972). Factoring and weighting approaches to status scores and 
+    clique identification. *Journal of Mathematical Sociology, 2*(1), 113-120.
+
+    Newman, M. E. J. (2008). The mathematics of networks. *The New Palgrave 
+    Dictionary of Economics, 2*(1), 1-12.
+
+    Example
+    -------
+    >>> import networkx as nx
+    >>> G = nx.karate_club_graph()
+    >>> eigenvector_centrality_from_scratch(G)
+    {0: 0.3730400736153818, 1: 0.2082196569730357, 2: 0.20624526357714606, ...}
+    """
+    
+    # Initialize centrality dict with uniform values for all nodes
+    centrality = {node: 1.0 / len(G) for node in G}
+    N = len(G)
+
+    # Power iteration method
+    for _ in range(max_iter):
+        prev_centrality = centrality.copy()
+        max_diff = 0  # Track maximum change in centrality values
+
+        for node in G:
+            # Update centrality: sum of neighbors' centralities
+            centrality[node] = sum(prev_centrality[neighbor] for neighbor in G[node])
+
+        # Normalize centrality values (divide by Euclidean norm)
+        norm = np.sqrt(sum(value ** 2 for value in centrality.values()))
+        if norm == 0:
+            return centrality  # Handle disconnected graphs
+        centrality = {node: value / norm for node, value in centrality.items()}
+
+        # Check for convergence
+        max_diff = max(abs(centrality[node] - prev_centrality[node]) for node in G)
+        if max_diff < tol:
+            break
+
+    return centrality

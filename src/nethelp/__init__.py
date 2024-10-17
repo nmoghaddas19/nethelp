@@ -3,4 +3,4 @@
 # SPDX-License-Identifier: MIT
 from . import distributions
 from . import search
-from . import convert
+from . import vis
