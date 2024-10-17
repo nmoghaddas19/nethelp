@@ -16,7 +16,7 @@
 - [License](#license)
 
 ## Installation
-
+To install the package, clone the repository and use pip:
 ```console
 git clone https://github.com/yourusername/netfuncs2.git
 cd netfuncs2
@@ -89,7 +89,8 @@ Simulates how a given color appears to different types of colorblindness. Suppor
 
 
 ## Usage
-```console
+After installing, import the package and use the functions as needed:
+```python
 import nethelp as nh
 
 # Example: Calculate degree distribution
