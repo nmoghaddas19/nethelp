@@ -20,3 +20,5 @@ gt = nethelp.convert.nx2gt(G)
 
 nethelp.distributions.degree_distribution()
 nethelp.degree_distribution()
+
+nethelp.vis.hex_to_rgb('ffffff')
