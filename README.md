@@ -16,10 +16,10 @@
 - [License](#license)
 
 ## Installation
-To install the package, clone the repository and use pip:
+To install the package, clone the repository, cd to the directory and use pip:
 ```console
-git clone https://github.com/yourusername/netfuncs2.git
-cd netfuncs2
+git clone https://github.com/nmoghaddas19/nethelp.git 
+cd nethelp 
 pip install .
 ```
 
